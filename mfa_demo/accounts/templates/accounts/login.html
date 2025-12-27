@@ -1,0 +1,9 @@
+<h2>Login</h2>
+<form method="POST">{% csrf_token %}
+    <input type="hidden" name="otp_created_at" value="{{ otp_created_at }}">
+    <input type="text" name="username" placeholder="Username" required><br>
+    <input type="password" name="password" placeholder="Password" required><br>
+    <button type="submit">Login</button>
+</form>
+<p style="color:red;">{{ error }}</p>
+<a href="{% url 'signup' %}">Sign Up</a> | <a href="{% url 'forgot_password' %}">Forgot Password</a>
