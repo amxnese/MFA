@@ -1,44 +1,23 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MFA Demo</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #f5f5f5;
-        }
-        .box {
-            background: white;
-            padding: 40px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        a {
-            display: block;
-            margin: 15px 0;
-            padding: 10px;
-            text-decoration: none;
-            color: white;
-            background: #007bff;
-            border-radius: 5px;
-        }
-        a.signup {
-            background: #28a745;
-        }
-    </style>
+    <link rel="stylesheet" href="/mfa_demo/accounts/static/accounts/css/auth.css">
 </head>
 <body>
-    <div class="box">
-        <h1>Welcome</h1>
-        <p>Please choose an option</p>
+    <div class="auth-container">
+        <div class="auth-header">
+            <h1>Welcome</h1>
+            <p>Please choose an option</p>
+        </div>
 
-        <a href="{% url 'login' %}">Sign In</a>
-        <a href="{% url 'signup' %}" class="signup">Sign Up</a>
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 24px;">
+            <a href="{% url 'login' %}" class="submit-btn" style="text-decoration: none; text-align: center;">Sign In</a>
+            <a href="{% url 'signup' %}" class="social-btn" style="text-decoration: none; text-align: center;">Sign Up</a>
+        </div>
     </div>
 </body>
 </html>
