@@ -1,3 +1,22 @@
-<h2>Welcome, {{ username }}!</h2>
-<p>You are logged in.</p>
-<a href="{% url 'login' %}">Logout</a>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+    <link rel="stylesheet" href="/mfa_demo/accounts/static/accounts/css/auth.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <h2>Welcome, {{ username }}!</h2>
+            <p>You are successfully logged in.</p>
+        </div>
+
+        <div style="text-align: center; margin-top: 32px;">
+            <a href="{% url 'login' %}" class="submit-btn" style="display: inline-block; text-decoration: none; width: auto; padding: 14px 32px;">Logout</a>
+        </div>
+    </div>
+</body>
+</html>
