@@ -7,17 +7,40 @@ from django.core.exceptions import ValidationError
 import string
 import time
 import re
+from django.contrib.auth.decorators import login_required
 
-# storing otp's
+
+# storing otp's, Structure : otp_store[email] = {'otp','created_at', 'data': {'username', 'password'}}
 otp_store = {}
-OTP_VALIDITY = 300 # 5 seconds
+OTP_VALIDITY = 300 # 5 minutes
+
+lockout_store = {}
+LOCKOUT_LIMIT = 3
+LOCKOUT_DURATION = 1800  # 30 minutes in seconds
 
 def signup(request):
     if request.method == 'POST':
         username = request.POST['username'].strip()
         email = request.POST['email'].strip()
         password = request.POST['password']
+        confirm = request.POST['confirm']
 
+        # Checking if email is used
+        if User.objects.filter(email=email).exists():
+                    return render(request, 'accounts/signup.html', {
+                        'email': email,
+                        'error': 'Email already used. Choose another one.',
+                        'next_action': 'signup'
+                    })
+
+        # Checking if username is available
+        if User.objects.filter(username=username).exists():
+                    return render(request, 'accounts/signup.html', {
+                        'email': email,
+                        'error': 'Username already exists. Choose another one.',
+                        'next_action': 'signup'
+                    })
+        
         # Email Validation
         try:
             validate_email(email)
@@ -28,6 +51,13 @@ def signup(request):
                 'next_action': 'signup'
             })
         
+        # Checking if passwords match
+        if password != confirm:
+            return render(request, 'accounts/signup.html', {
+                'error': 'Passwords don\'t match',
+            })
+
+        
         # Password Validation
         if not password_validation(password):
             return render(request, 'accounts/signup.html', {
@@ -36,13 +66,6 @@ def signup(request):
                 'next_action': 'signup'
             })
         
-        # Username Validation
-        if User.objects.filter(username=username).exists():
-                    return render(request, 'accounts/signup.html', {
-                        'email': email,
-                        'error': 'Username already exists. Choose another one.',
-                        'next_action': 'signup'
-                    })
 
         # gererating the otp and rendering to the verify otp page
         otp = generate_otp()
@@ -99,10 +122,32 @@ def login_view(request):
         # Gathering username and password
         username = request.POST['username']
         password = request.POST['password']
+        # Storing current time
+        current_time = time.time()
+
+        # Checking if user is locked in
+        if username in lockout_store:
+            user_lock = lockout_store[username]
+            if user_lock['attempts'] >= LOCKOUT_LIMIT:
+                remaining_time = user_lock['locked_until'] - current_time
+                if remaining_time > 0:
+                    minutes_left = int(remaining_time // 60)
+                    return render(request, 'accounts/login.html', {
+                        'error': f'Too many attempts. Account locked. Try again in {minutes_left} minutes.'
+                    })
+                else:
+                    # Lock expired, reset the counter
+                    lockout_store[username] = {'attempts': 0, 'locked_until': 0}
+
         # trying to log in using the given credentials
         user = authenticate(request, username=username, password=password)
         # case where the credentials are valid
         if user:
+            # Success: Reset failed attempts for this user
+            if username in lockout_store:
+                del lockout_store[username]
+            
+            # generate the otp
             otp = generate_otp() 
             otp_store[user.email] = {'otp': otp,'created_at': time.time(), 'data': {'username': username}}
             send_otp(user.email, otp)
@@ -111,18 +156,35 @@ def login_view(request):
                 'email': user.email,
                 'next_action': 'login'
             })
+        
         # invalid credentials
         else:
+            # Increment attempt counter
+            if username not in lockout_store:
+                lockout_store[username] = {'attempts': 1, 'locked_until': 0}
+            else:
+                lockout_store[username]['attempts'] += 1
+                
+            # in case of entering 3 wrong credentials
+            if lockout_store[username]['attempts'] >= LOCKOUT_LIMIT:
+                lockout_store[username]['locked_until'] = current_time + LOCKOUT_DURATION
+                return render(request, 'accounts/login.html', {
+                    'error': 'Too many failed attempts. You are locked out for 30 minutes.'
+                })
+
             return render(request, 'accounts/login.html', {'error': 'Invalid credentials'})
+        
     return render(request, 'accounts/login.html')
 
 def forgot_password(request):
     if request.method == 'POST':
         email = request.POST['email']
+
         # case where the email is valid
         if User.objects.filter(email=email).exists():
             otp = generate_otp()
-            otp_store[email] = {'otp': otp}
+            # otp_store[email] = {'otp': otp}
+            otp_store[email] = {'otp': otp,'created_at': time.time()}
             send_otp(email, otp)
             return render(request, 'accounts/verify_otp.html', {'email': email, 'next_action': 'forgot_password'})
         # invalid email
@@ -148,7 +210,7 @@ def reset_password(request, email):
         return redirect('login')
     return render(request, 'accounts/reset_password.html', {'email': email})
 
-
+@login_required(login_url='login')
 def welcome(request, username):
     return render(request, 'accounts/welcome.html', {'username': username})
 

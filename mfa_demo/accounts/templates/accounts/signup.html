@@ -1,11 +1,11 @@
-
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
-    <link rel="stylesheet" href="/mfa_demo/accounts/static/accounts/css/auth.css">
+    <link rel="stylesheet" href="{% static 'accounts/auth.css' %}">
 </head>
 <body>
     <div class="auth-container">
@@ -32,7 +32,19 @@
             <div class="form-group">
                 <div class="password-input-wrapper">
                     <input type="password" name="password" id="password" placeholder="Password" required autocomplete="new-password">
-                    <button type="button" class="password-toggle" onclick="togglePassword()" aria-label="Toggle password visibility">
+                    <button type="button" class="password-toggle" onclick="togglePassword('password')" aria-label="Toggle password visibility">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="password-input-wrapper">
+                    <input type="password" name="confirm" id="confirm" placeholder="Confirm Password" required autocomplete="new-password">
+                    <button type="button" class="password-toggle" onclick="togglePassword('confirm')" aria-label="Toggle password visibility">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -70,5 +82,17 @@
             </div>
         </form>
     </div>
+    <script>
+        function togglePassword(fieldId) {
+            const input = document.getElementById(fieldId);
+
+            if (input.type === "password") {
+                input.type = "text";
+            } else {
+                input.type = "password";
+            }
+        }
+    </script>
+
 </body>
 </html>
